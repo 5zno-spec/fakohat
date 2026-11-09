@@ -191,6 +191,7 @@ try{Object.assign(prog,JSON.parse(localStorage.getItem("qitaf-prog")||"{}"))}cat
 function saveWin(l,s){
   prog.stars[l]=Math.max(prog.stars[l]||0,s);prog.unlocked=Math.max(prog.unlocked,Math.min(l+1,TOTAL));
   try{localStorage.setItem("qitaf-prog",JSON.stringify(prog))}catch(e){}
+  mirror();
 }
 const ar=s=>String(s).replace(/\d/g,d=>"٠١٢٣٤٥٦٧٨٩"[d]);
 let ach={u:{},fr:0,mc:0};
@@ -489,6 +490,34 @@ $("homemap").onclick=()=>{sfx("tap");cloudSwap(()=>{hm.remove();showMap()})};
 $("homeach").onclick=()=>{sfx("tap");showAch()};
 $("achx").onclick=()=>{sfx("tap");$("ach").className=""};
 chk(true);
+/* حفظ دائم للتقدّم: تخزين غير قابل للمسح + نسخة احتياطية في IndexedDB تُستعاد إن مُسح localStorage */
+const KEYS=["qitaf-best","qitaf-prog","qitaf-ach","qitaf-mute"];
+const idb=()=>new Promise((ok,no)=>{const q=indexedDB.open("fakohat",1);q.onupgradeneeded=()=>q.result.createObjectStore("kv");q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)});
+async function mirror(){
+  try{
+    const db=await idb(),tx=db.transaction("kv","readwrite"),s=tx.objectStore("kv");
+    KEYS.forEach(k=>{const v=localStorage.getItem(k);if(v!==null)s.put(v,k)});
+    tx.oncomplete=tx.onerror=tx.onabort=()=>db.close();
+  }catch(e){}
+}
+async function restore(){
+  try{
+    if(localStorage.getItem("qitaf-prog")!==null)return;
+    const db=await idb(),s=db.transaction("kv").objectStore("kv");
+    const got=await Promise.all(KEYS.map(k=>new Promise(ok=>{const q=s.get(k);q.onsuccess=()=>ok(q.result);q.onerror=()=>ok(undefined)})));
+    db.close();
+    if(got[1]===undefined)return;
+    KEYS.forEach((k,i)=>{if(got[i]!==undefined)localStorage.setItem(k,got[i])});
+    Object.assign(prog,JSON.parse(got[1]));
+    if(got[2])Object.assign(ach,JSON.parse(got[2]));
+    best=Math.max(best,+got[0]||0);muted=got[3]==="1";setSnd();
+    if(!score)newLevel(Math.min(prog.unlocked,TOTAL));
+  }catch(e){}
+}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+restore().then(mirror);
+addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")mirror()});
+addEventListener("pagehide",mirror);
 const sp=$("splash");sp.querySelector("img").src=lg;
 addEventListener("beforeinstallprompt",e=>e.preventDefault());
 let cg=false;
