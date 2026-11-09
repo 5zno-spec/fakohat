@@ -124,7 +124,7 @@ main>p{margin-bottom:auto!important}
 @keyframes bob{0%,100%{translate:0 0}50%{translate:0 -5px}}
 @media (prefers-reduced-motion:reduce){#home img,#play,#homemap{animation:none}}
 .cl.wc{animation:none;opacity:1}
-#mapx,#back{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:3;width:58px;height:58px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;line-height:0;background:#fff;color:#8a2f55;box-shadow:0 4px 0 #e3a9c0,0 8px 16px rgba(0,0,0,.25)}
+#mapx,#back{position:fixed;left:max(14px,calc(50% - 308px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:3;width:58px;height:58px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;line-height:0;background:#fff;color:#8a2f55;box-shadow:0 4px 0 #e3a9c0,0 8px 16px rgba(0,0,0,.25)}
 #mapx:active,#back:active{translate:0 3px;box-shadow:0 1px 0 #e3a9c0}
 
 /* نافذة التثبيت الزجاجية */
@@ -264,14 +264,14 @@ if("serviceWorker" in navigator)addEventListener("load",()=>{navigator.serviceWo
 <div class="row"><button id="mapbtn">الخريطة</button><button class="ghost" id="restart" aria-label="ابدأ من جديد" title="ابدأ من جديد"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.8-6.1"/><path d="M20 3.5v5h-5"/></svg></button><button class="ghost" id="snd" aria-label="الصوت"></button></div>
 <p style="color:var(--mute);margin:12px 2px 0;font-size:.85rem">اسحب فاكهة أو المسها ثم المس المجاورة لها.<br>اجمع ٣ فواكه متطابقة أو أكثر حتى تبلغ هدف المرحلة.</p>
 </main>
-<button class="ghost" id="back" aria-label="رجوع إلى الخريطة" title="رجوع إلى الخريطة" style="z-index:5"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M14 6l6 6-6 6"/></svg></button>
+<button class="ghost" id="back" aria-label="رجوع إلى الخريطة" title="رجوع إلى الخريطة" style="z-index:5"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4"/><path d="M10 6l-6 6 6 6"/></svg></button>
 <div id="msg"></div>
 <div id="ip" aria-hidden="true"><div id="ip-card" role="dialog" aria-modal="true" aria-label="تثبيت فكوهات" tabindex="-1">
 <div class="ip-ic"><img alt=""></div>
 <div class="ip-steps" id="ip-s"></div>
 <button type="button" class="ip-go" id="ip-go"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span>تثبيت</span></button>
 </div></div>
-<section id="map"><button class="ghost" id="mapx" aria-label="رجوع" title="رجوع"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M14 6l6 6-6 6"/></svg></button><div id="mapbody"></div></section>
+<section id="map"><button class="ghost" id="mapx" aria-label="رجوع" title="رجوع"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4"/><path d="M10 6l-6 6 6 6"/></svg></button><div id="mapbody"></div></section>
 <script>
 let R=8,C=8;const F=["🍎","🍌","🍇","🍊","🍓","🍉"];
 const $=id=>document.getElementById(id),board=$("board"),msg=$("msg");
