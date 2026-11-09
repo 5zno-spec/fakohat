@@ -623,5 +623,13 @@ function cloudSwap(mid){
 }
 setTimeout(()=>cloudSwap(()=>{sp.remove();instSoon()}),3000);
 </script>
+<!-- kids-store-install:start -->
+<button id="installBtn" hidden style="position:fixed;inset:auto 16px 24px;padding:16px;font-size:20px;z-index:99999">⬇️ ثبّت اللعبة</button>
+<script>
+(function(){var ev,b=document.getElementById("installBtn");
+addEventListener("beforeinstallprompt",function(e){e.preventDefault();ev=e;if(location.search.indexOf("install=1")>-1)b.hidden=false});
+b.onclick=async function(){ev.prompt();await ev.userChoice;b.hidden=true}})();
+</script>
+<!-- kids-store-install:end -->
 </body>
 </html>
