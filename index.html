@@ -131,6 +131,13 @@ main>p{margin-bottom:auto!important}
 .atoast b{font-size:1.8rem;line-height:1}
 .atoast span{font-weight:800}
 .atoast small{display:block;color:var(--acc);font-size:.75rem}
+.pr{position:fixed;z-index:12;translate:-50% -50%;pointer-events:none;display:flex;align-items:center;justify-content:center;animation:prin 1.4s ease-in-out forwards}
+.pr.st{width:clamp(130px,38vw,170px);aspect-ratio:1;filter:drop-shadow(0 6px 8px rgba(0,0,0,.3))}
+.pr.st svg{width:100%;height:100%;overflow:visible}
+.pr.st text{font-family:inherit;font-weight:800;font-size:15px;fill:#5a2a00}
+.pr.rc{padding:10px 30px;border-radius:20px;color:#fff;font-size:1.7rem;font-weight:800;white-space:nowrap;background:linear-gradient(180deg,#ff9ac0,#ff4d7e);box-shadow:0 5px 0 #c2305c,0 10px 18px rgba(0,0,0,.28)}
+@keyframes prin{0%{opacity:0;scale:.3}18%{opacity:1;scale:1.15}30%{scale:1}78%{opacity:1;scale:1}100%{opacity:0;scale:.9}}
+@media (prefers-reduced-motion:reduce){.pr{animation:prfade 1.4s forwards}@keyframes prfade{0%{opacity:0}15%,78%{opacity:1}100%{opacity:0}}}
 @keyframes atin{0%{opacity:0;translate:-50% -24px}12%,86%{opacity:1;translate:-50% 0}100%{opacity:0;translate:-50% -24px}}
 @media (prefers-reduced-motion:reduce){.atoast{animation:atfade 2.6s forwards}@keyframes atfade{0%{opacity:0;translate:-50% 0}12%,86%{opacity:1;translate:-50% 0}100%{opacity:0;translate:-50% 0}}}
 #play:active{translate:0 4px;box-shadow:0 2px 0 #c2305c}
@@ -176,7 +183,7 @@ const pgf=document.createElement("i");$("pg").appendChild(pgf);
 let grid,score,moves,level,busy,sel,start,best=0,uid=0;
 try{best=+localStorage.getItem("qitaf-best")||0}catch(e){}
 const target=()=>level<=10?15+(level-1)*2:Math.round(35+(level-10)*65/(TOTAL-10));
-let maxCombo=0;
+let maxCombo=0,pm=0;
 const TOTAL=30;
 const SIZES=[[6,4],[6,5],[6,6],[7,6],[7,7],[8,7],[8,8]];
 let prog={unlocked:1,stars:{}};
@@ -215,6 +222,22 @@ function chk(silent){
   if(!nw.length)return;
   nw.forEach(a=>ach.u[a.id]=Date.now());saveAch();
   if(!silent){tq.push(...nw);if(!tb)nextToast()}
+}
+const PSW=["رائع","ممتاز","مذهل","فنان"],PRW=["أحسنت","برافو","عمل جميل","أداء مميز"];
+function praiseIdx(n){
+  if(n<1)return -1;if(n===1)return 0;if(n===2)return 1;
+  let m=2,k=1,g=3;
+  while(m<n){m+=g;g=g===3?5:3;k++}
+  return m===n?k:-1;
+}
+function praise(n){
+  const k=praiseIdx(n);if(k<0)return;
+  document.querySelectorAll(".pr").forEach(e=>e.remove());
+  const star=k%2===0,w=(star?PSW:PRW)[Math.floor(k/2)%4],b=board.getBoundingClientRect(),el=document.createElement("div");
+  el.className="pr "+(star?"st":"rc");el.setAttribute("aria-hidden","true");
+  el.style.left=(b.left+b.width/2)+"px";el.style.top=(b.top+b.height/2)+"px";
+  el.innerHTML=star?`<svg viewBox="0 0 100 100"><polygon points="50,4 61,36 95,36 67,57 78,90 50,70 22,90 33,57 5,36 39,36" fill="#ffd23f" stroke="#ff9f1c" stroke-width="4" stroke-linejoin="round"/><text x="50" y="56" text-anchor="middle">${w}</text></svg>`:w;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),1500);
 }
 function showAch(){
   $("achn").textContent=ar(AL.filter(a=>ach.u[a.id]).length+" من "+AL.length);
@@ -354,7 +377,7 @@ function newLevel(lv){
   board.querySelectorAll(".t").forEach(e=>e.remove());msg.className="";
   level=lv||level||1;score=0;
   const sz=SIZES[Math.min(Math.floor((level-1)/3),SIZES.length-1)];C=sz[0];R=sz[1];board.style.setProperty("--c",C);board.style.setProperty("--r",R);
-  maxCombo=0;grid=[];sel=null;
+  maxCombo=0;pm=0;grid=[];sel=null;
   for(let r=0;r<R;r++){grid[r]=[];for(let c=0;c<C;c++){
     let v;do{v=rnd()}while((c>1&&ty(r,c-1)===v&&ty(r,c-2)===v)||(r>1&&ty(r-1,c)===v&&ty(r-2,c)===v));
     grid[r][c]=mk(r,c,v);
@@ -388,6 +411,7 @@ async function swap(a,b){
   sfx("swap");swapCells(a,b);await sleep(220);
   if(!findMatches().size){sfx("bad");swapCells(a,b);await sleep(220);busy=false;armHint();return}
   ui();await resolve();ui();
+  if(score<target())praise(++pm);
   if(score>=target()){
     const st=maxCombo>=3?3:maxCombo>=2?2:1;saveWin(level,st);chk();
     msg.innerHTML=`<h2>أحسنت! 🎉</h2><p>${"⭐".repeat(st)}</p><p>أنهيت المرحلة ${level}</p><button id="nx">المرحلة التالية</button><button class="ghost" id="mp">الخريطة</button>`;
