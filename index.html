@@ -155,12 +155,17 @@ transform:translateY(24px) scale(.94);transition:transform .45s cubic-bezier(.2,
 #ip .ip-go{color:#fff;background:linear-gradient(180deg,#ff9ac0,#ff4d7e);box-shadow:0 5px 0 #c2305c,0 10px 18px rgba(214,90,130,.35)}
 #ip .ip-go:active{translate:0 3px;box-shadow:0 2px 0 #c2305c}
 #ip .ip-no{color:#8a2f55;background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85)}
+#homeinst{position:relative;margin-top:-14px;display:inline-flex;align-items:center;gap:8px;font-size:1.1rem;padding:9px 26px;border-radius:28px;color:#fff;background:linear-gradient(180deg,#6cc3ff,#2b8cf0);box-shadow:0 6px 0 #1a62b8,0 12px 20px rgba(43,140,240,.4);animation:ipin .45s cubic-bezier(.2,1.4,.4,1),bob 1.6s ease-in-out .45s infinite}
+#homeinst[hidden]{display:none}
+#homeinst:active{translate:0 4px;box-shadow:0 2px 0 #1a62b8}
+@keyframes ipin{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
 @media (max-width:520px){#ip{align-items:flex-end}#ip-card{width:100%}}
-@media (prefers-reduced-motion:reduce){#ip,#ip-card{transition:none}}
+@media (prefers-reduced-motion:reduce){#ip,#ip-card{transition:none}#homeinst{animation:none}}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){#ip-card{background:rgba(255,255,255,.92)}}
 </style>
 <script>
-/* نافذة تثبيت التطبيق: تظهر بعد ثانية من فتح الصفحة (حاسوب وهاتف).
+/* نافذة تثبيت التطبيق: تظهر بعد ثانية من انتقال اللعبة من شاشة التحميل إلى الشاشة الثانية.
+   إن تجاهلها المستخدم يظهر زر «تثبيت التطبيق» الأزرق تحت زر الخريطة.
    لإعادة إظهارها أثناء التجربة افتح الصفحة مع ‎?install=1 */
 (()=>{"use strict";
 const KEY="qitaf-install",SNOOZE=864e5,DELAY=1000;
@@ -175,43 +180,52 @@ const snoozed=()=>{const v=mem(KEY);return v==="done"||(!!v&&Date.now()-(+v||0)<
 const tap=()=>{try{sfx("tap")}catch(e){}};
 const SHARE='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 15V3M8 7l4-4 4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>';
 const HOW=ios?"اضغط زر المشاركة "+SHARE+" في شريط المتصفح، ثم اختر «إضافة إلى الشاشة الرئيسية».":safariDesktop?"من قائمة «ملف» اختر «إضافة إلى Dock».":"افتح قائمة المتصفح (⋮ أو ⋯) ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».";
-let dp=null,ov,go,no,steps,last,mode="ask",isOpen=false;
+let dp=null,ov,go,no,steps,btn,last,mode="ask",isOpen=false;
 
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e});
-addEventListener("appinstalled",()=>{dp=null;mem(KEY,"done");hide()});
+addEventListener("appinstalled",()=>{dp=null;mem(KEY,"done");hide();hideBtn()});
 
 function setMode(){
   const ack=mode==="ack";
   steps.innerHTML=ack?HOW:"";steps.classList.toggle("on",ack);
   go.textContent=ack?"حسنًا":"تثبيت";no.hidden=ack;
 }
-function show(){
-  if(isOpen||!ov)return;
-  if(!force&&(standalone()||snoozed()||ffDesktop))return;
+const can=()=>force||!(standalone()||mem(KEY)==="done"||ffDesktop);
+function showBtn(){if(btn&&!isOpen&&can())btn.hidden=false}
+function hideBtn(){if(btn)btn.hidden=true}
+function openWin(ack){
   const lg=document.querySelector(".logo img");if(lg)ov.querySelector(".ip-ic img").src=lg.src;
-  mode=ios?"ack":"ask";setMode();
+  mode=ack?"ack":"ask";setMode();hideBtn();
   last=document.activeElement;isOpen=true;
   ov.classList.add("on");ov.setAttribute("aria-hidden","false");ov.offsetWidth;
   requestAnimationFrame(()=>{ov.classList.add("vis");q("ip-card").focus({preventScroll:true})});
+}
+function show(){
+  if(isOpen||!ov||!can())return;
+  if(!force&&snoozed()){showBtn();return}
+  openWin(ios);
 }
 function hide(){
   if(!isOpen)return;isOpen=false;
   if(mem(KEY)!=="done")mem(KEY,String(Date.now()));
   ov.classList.remove("vis");ov.setAttribute("aria-hidden","true");
-  const end=()=>{ov.classList.remove("on");try{last&&last.focus&&last.focus({preventScroll:true})}catch(e){}};
+  const end=()=>{ov.classList.remove("on");try{last&&last.focus&&last.focus({preventScroll:true})}catch(e){}showBtn()};
   matchMedia("(prefers-reduced-motion:reduce)").matches?end():setTimeout(end,420);
 }
-async function onGo(){
+async function doInstall(){
   tap();
-  if(mode==="ack"){hide();return}
   if(dp){
     const p=dp;dp=null;
     try{p.prompt();const r=await p.userChoice;mem(KEY,r&&r.outcome==="accepted"?"done":String(Date.now()))}
     catch(e){mem(KEY,String(Date.now()))}
-    hide();return;
+    if(isOpen)hide();
+    if(mem(KEY)==="done")hideBtn();
+    return;
   }
+  if(!isOpen){openWin(true);return}
   mode="ack";setMode();go.focus({preventScroll:true});
 }
+const onGo=()=>{if(mode==="ack"){tap();hide()}else doInstall()};
 addEventListener("keydown",e=>{
   if(!isOpen)return;
   if(e.key==="Escape"){hide();return}
@@ -221,18 +235,26 @@ addEventListener("keydown",e=>{
   }
 });
 document.addEventListener("DOMContentLoaded",()=>{
-  ov=q("ip");go=q("ip-go");no=q("ip-no");steps=q("ip-s");
+  ov=q("ip");go=q("ip-go");no=q("ip-no");steps=q("ip-s");btn=q("homeinst");
   if(!ov)return;
   go.onclick=onGo;no.onclick=()=>{tap();hide()};
+  if(btn)btn.onclick=doInstall;
   ov.addEventListener("click",e=>{if(e.target===ov)hide()});
-  setTimeout(show,DELAY);
+  /* ننتظر اختفاء شاشة التحميل ثم نعرض النافذة بعد ثانية */
+  let armed=false;const arm=()=>{if(!armed){armed=true;setTimeout(show,DELAY)}};
+  const sp=q("splash");
+  if(sp){
+    const mo=new MutationObserver(()=>{if(!document.body.contains(sp)){mo.disconnect();arm()}});
+    mo.observe(document.body,{childList:true});
+    setTimeout(arm,8000);
+  }else arm();
 });
 if("serviceWorker" in navigator)addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})});
 })();
 </script>
 </head>
 <body>
-<div id="home"><i class="cl" style="left:60%;top:8%;scale:.9;animation-duration:9s"></i><i class="cl" style="left:4%;top:20%;animation-duration:10s"></i><i class="cl" style="left:56%;top:80%;scale:1.1"></i><img alt=""><button id="play">هيا نلعب</button><button id="homemap">الخريطة</button></div>
+<div id="home"><i class="cl" style="left:60%;top:8%;scale:.9;animation-duration:9s"></i><i class="cl" style="left:4%;top:20%;animation-duration:10s"></i><i class="cl" style="left:56%;top:80%;scale:1.1"></i><img alt=""><button id="play">هيا نلعب</button><button id="homemap">الخريطة</button><button id="homeinst" type="button" hidden><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg><span>تثبيت التطبيق</span></button></div>
 <div id="splash" aria-hidden="true"><i class="cl" style="left:6%;top:10%"></i><i class="cl" style="left:64%;top:6%;scale:.8;animation-duration:9s"></i><i class="cl" style="left:68%;top:78%;scale:1.1;animation-duration:10s"></i><img alt=""><div class="ld"><i></i></div></div>
 <div class="sky" aria-hidden="true"><i class="cl" style="left:6%;top:5%"></i><i class="cl" style="left:62%;top:3%;scale:.8;animation-duration:9s"></i><i class="cl" style="left:30%;top:15%;scale:1.2;animation-duration:11s"></i><i class="cl" style="left:76%;top:20%;scale:.65;animation-duration:8s"></i><i class="cl" style="left:-4%;top:27%;scale:.7;animation-duration:10s"></i></div>
 <main>
