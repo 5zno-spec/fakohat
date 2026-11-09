@@ -395,6 +395,7 @@ const lg=document.querySelector(".logo img").src,hm=$("home");hm.querySelector("
 $("play").onclick=()=>{sfx("tap");cloudSwap(()=>hm.remove())};
 $("homemap").onclick=()=>{sfx("tap");cloudSwap(()=>{hm.remove();showMap()})};
 const sp=$("splash");sp.querySelector("img").src=lg;
+addEventListener("beforeinstallprompt",e=>e.preventDefault());
 let cg=false;
 function cloudSwap(mid){
   if(cg)return;cg=true;
