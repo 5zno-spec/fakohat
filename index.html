@@ -106,16 +106,18 @@ main>p{text-align:center}
 main{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
 #board{margin-top:auto;flex:0 0 auto}
 main>p{margin-bottom:auto!important}
-#home{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;overflow:hidden;background:linear-gradient(180deg,#78c8ff 0%,#b4e2ff 24%,#e9f5ff 44%,#ffe5ef 70%,#ffc6da 100%);transition:opacity .5s}
+#home{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px;overflow:hidden;background:linear-gradient(180deg,#78c8ff 0%,#b4e2ff 24%,#e9f5ff 44%,#ffe5ef 70%,#ffc6da 100%);transition:opacity .5s}
 #home.out{opacity:0;pointer-events:none}
 #home.off{display:none}
 #home img{position:relative;width:min(66vw,290px);height:auto;animation:grow 1.6s ease-in-out infinite}
 #play{position:relative;font-size:1.6rem;padding:12px 46px;border-radius:32px;color:#fff;background:linear-gradient(180deg,#ff9ac0,#ff4d7e);box-shadow:0 6px 0 #c2305c,0 12px 20px rgba(214,90,130,.4);animation:bob 1.6s ease-in-out infinite}
-#homemap{position:relative;margin-top:-14px;font-size:1.3rem;padding:10px 40px;border-radius:30px;color:#fff;background:linear-gradient(180deg,#6fe08a,#2fb457);box-shadow:0 6px 0 #1f8a3f,0 12px 20px rgba(47,180,87,.4);animation:bob 1.6s ease-in-out infinite;animation-delay:.2s}
+#homemap{position:relative;margin-top:0;font-size:1.3rem;padding:10px 40px;border-radius:30px;color:#fff;background:linear-gradient(180deg,#6fe08a,#2fb457);box-shadow:0 6px 0 #1f8a3f,0 12px 20px rgba(47,180,87,.4);animation:bob 1.6s ease-in-out infinite;animation-delay:.2s}
 #homemap:active{translate:0 4px;box-shadow:0 2px 0 #1f8a3f}
-#homeach{position:relative;margin-top:-14px;font-size:1.3rem;padding:10px 40px;border-radius:30px;color:#5a2a00;background:linear-gradient(180deg,#ffd166,#ff9f1c);box-shadow:0 6px 0 #b86a00,0 12px 20px rgba(255,159,28,.4);animation:bob 1.6s ease-in-out infinite;animation-delay:.4s}
+#homeach{position:relative;margin-top:0;font-size:1.3rem;padding:10px 40px;border-radius:30px;color:#5a2a00;background:linear-gradient(180deg,#ffd166,#ff9f1c);box-shadow:0 6px 0 #b86a00,0 12px 20px rgba(255,159,28,.4);animation:bob 1.6s ease-in-out infinite;animation-delay:.4s}
 #homeach:active{translate:0 4px;box-shadow:0 2px 0 #b86a00}
 @media (max-height:620px){#home{gap:18px}#home img{width:min(48vw,190px)}}
+/* الجوال: عقد الخريطة أصغر قليلًا وبلا نبض واسع كي لا تتلامس مع المرحلة المجاورة */
+@media (max-width:520px){.nd{width:50px;height:50px;font-size:1.25rem}.nd small{font-size:.68rem}.nd span{font-size:.62rem;top:calc(100% + 2px)}.nd.cur{width:60px;height:60px;box-shadow:0 4px 0 #8e1038,0 0 0 4px rgba(255,255,255,.9),0 0 16px 6px rgba(255,255,255,.7)}@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.07)}}}
 #ach{position:fixed;inset:0;z-index:95;display:none;overflow-x:hidden;overflow-y:auto;background:linear-gradient(180deg,#78c8ff 0%,#b4e2ff 24%,#e9f5ff 44%,#ffe5ef 70%,#ffc6da 100%);padding-top:env(safe-area-inset-top,0px)}
 #ach.on{display:block}
 #achb{max-width:480px;margin:0 auto;padding:14px 14px calc(96px + env(safe-area-inset-bottom,0px));display:grid;gap:12px}
