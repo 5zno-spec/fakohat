@@ -108,6 +108,7 @@ main{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
 main>p{margin-bottom:auto!important}
 #home{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px;overflow:hidden;background:linear-gradient(180deg,#78c8ff 0%,#b4e2ff 24%,#e9f5ff 44%,#ffe5ef 70%,#ffc6da 100%);transition:opacity .5s}
 #home.out{opacity:0;pointer-events:none}
+#home.off{display:none}
 #home img{position:relative;width:min(66vw,290px);height:auto;animation:grow 1.6s ease-in-out infinite}
 #play{position:relative;font-size:1.6rem;padding:12px 46px;border-radius:32px;color:#fff;background:linear-gradient(180deg,#ff9ac0,#ff4d7e);box-shadow:0 6px 0 #c2305c,0 12px 20px rgba(214,90,130,.4);animation:bob 1.6s ease-in-out infinite}
 #homemap{position:relative;margin-top:-14px;font-size:1.3rem;padding:10px 40px;border-radius:30px;color:#fff;background:linear-gradient(180deg,#6fe08a,#2fb457);box-shadow:0 6px 0 #1f8a3f,0 12px 20px rgba(47,180,87,.4);animation:bob 1.6s ease-in-out infinite;animation-delay:.2s}
@@ -171,10 +172,10 @@ main>p{margin-bottom:auto!important}
 <div class="row"><button id="mapbtn">الخريطة</button><button class="ghost" id="restart" aria-label="ابدأ من جديد" title="ابدأ من جديد"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.8-6.1"/><path d="M20 3.5v5h-5"/></svg></button><button class="ghost" id="snd" aria-label="الصوت"></button></div>
 <p style="color:var(--mute);margin:12px 2px 0;font-size:.85rem">اسحب فاكهة أو المسها ثم المس المجاورة لها.<br>اجمع ٣ فواكه متطابقة أو أكثر حتى تبلغ هدف المرحلة.</p>
 </main>
-<button class="ghost" id="back" aria-label="رجوع إلى الخريطة" title="رجوع إلى الخريطة" style="z-index:5"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M14 6l6 6-6 6"/></svg></button>
+<button class="ghost" id="back" aria-label="رجوع إلى الخريطة" title="رجوع إلى الخريطة" style="z-index:5"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4"/><path d="M10 6l-6 6 6 6"/></svg></button>
 <div id="msg"></div>
-<section id="map"><button class="ghost" id="mapx" aria-label="رجوع" title="رجوع"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M14 6l6 6-6 6"/></svg></button><div id="mapbody"></div></section>
-<section id="ach" role="dialog" aria-label="الإنجازات"><div class="mh"><h2>🏆 الإنجازات</h2><span id="achn"></span></div><div id="achb"></div><button class="ghost" id="achx" aria-label="رجوع" title="رجوع"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M14 6l6 6-6 6"/></svg></button></section>
+<section id="map"><button class="ghost" id="mapx" aria-label="رجوع" title="رجوع"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4"/><path d="M10 6l-6 6 6 6"/></svg></button><div id="mapbody"></div></section>
+<section id="ach" role="dialog" aria-label="الإنجازات"><div class="mh"><h2>🏆 الإنجازات</h2><span id="achn"></span></div><div id="achb"></div><button class="ghost" id="achx" aria-label="رجوع" title="رجوع"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H4"/><path d="M10 6l-6 6 6 6"/></svg></button></section>
 <script>
 let R=8,C=8;const F=["🍎","🍌","🍇","🍊","🍓","🍉"];
 const $=id=>document.getElementById(id),board=$("board"),msg=$("msg");
@@ -421,11 +422,11 @@ async function swap(a,b){
   if(score>=target()){
     const st=maxCombo>=3?3:maxCombo>=2?2:1;saveWin(level,st);chk();
     msg.innerHTML=`<h2>أحسنت! 🎉</h2><p>${"⭐".repeat(st)}</p><p>أنهيت المرحلة ${level}</p><button id="nx">المرحلة التالية</button><button class="ghost" id="mp">الخريطة</button>`;
-    sfx("win");msg.className="on";confetti();$("nx").onclick=()=>cloudSwap(()=>level<TOTAL?newLevel(level+1):showMap());$("mp").onclick=()=>cloudSwap(showMap);return;
+    sfx("win");msg.className="on";confetti();$("nx").onclick=()=>cloudSwap(()=>level<TOTAL?newLevel(level+1):go("map"));$("mp").onclick=()=>cloudSwap(()=>go("map"));return;
   }
   if(false){
     msg.innerHTML=`<h2>انتهت الحركات</h2><p>نقاطك ${score} من ${target()}</p><button id="rt">حاول مرة أخرى</button><button class="ghost" id="mp">الخريطة</button>`;
-    sfx("lose");msg.className="on";$("rt").onclick=()=>newLevel(level);$("mp").onclick=showMap;return;
+    sfx("lose");msg.className="on";$("rt").onclick=()=>newLevel(level);$("mp").onclick=()=>go("map");return;
   }
   busy=false;armHint(800);
 }
@@ -479,16 +480,25 @@ $("restart").onclick=()=>newLevel(level);
 function setSnd(){$("snd").innerHTML=muted?`<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M3 9.5h3.6L11.5 5.2a.8.8 0 0 1 1.3.6v12.4a.8.8 0 0 1-1.3.6L6.6 14.5H3z"/><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M16 9.5l5 5"/><path d="M21 9.5l-5 5"/></g></svg>`:`<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M3 9.5h3.6L11.5 5.2a.8.8 0 0 1 1.3.6v12.4a.8.8 0 0 1-1.3.6L6.6 14.5H3z"/><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M16 9a4.2 4.2 0 0 1 0 6"/><path d="M18.6 6.4a8 8 0 0 1 0 11.2"/></g></svg>`}
 setSnd();
 $("snd").onclick=()=>{muted=!muted;setSnd();try{localStorage.setItem("qitaf-mute",muted?"1":"0")}catch(e){}sfx("tap")};
-$("back").onclick=()=>cloudSwap(showMap);
-$("mapbtn").onclick=()=>cloudSwap(showMap);
-$("mapx").onclick=()=>cloudSwap(()=>{$("map").className=""});
-$("mapbody").onclick=e=>{const b=e.target.closest(".nd");if(b&&!b.disabled)cloudSwap(()=>{$("map").className="";newLevel(+b.dataset.l)})};
+/* التنقل: الرئيسية ← (الخريطة | الإنجازات | اللعب)؛ سهم الرجوع يعود صفحة صفحة حتى الواجهة الرئيسية */
+const hm=$("home"),stack=["home"];
+function show(s){
+  hm.classList.toggle("off",s!=="home");
+  $("map").className="";$("ach").className="";
+  if(s==="map")showMap();else if(s==="ach")showAch();
+}
+function go(s){if(stack[stack.length-1]!==s)stack.push(s);show(s)}
+function goBack(){if(stack.length>1)stack.pop();show(stack[stack.length-1])}
+$("back").onclick=()=>cloudSwap(goBack);
+$("mapbtn").onclick=()=>cloudSwap(()=>go("map"));
+$("mapx").onclick=()=>cloudSwap(goBack);
+$("mapbody").onclick=e=>{const b=e.target.closest(".nd");if(b&&!b.disabled)cloudSwap(()=>{stack.pop();go("game");newLevel(+b.dataset.l)})};
 newLevel(Math.min(prog.unlocked,TOTAL));
-const lg=document.querySelector(".logo img").src,hm=$("home");hm.querySelector("img").src=lg;
-$("play").onclick=()=>{sfx("tap");cloudSwap(()=>hm.remove())};
-$("homemap").onclick=()=>{sfx("tap");cloudSwap(()=>{hm.remove();showMap()})};
-$("homeach").onclick=()=>{sfx("tap");showAch()};
-$("achx").onclick=()=>{sfx("tap");$("ach").className=""};
+const lg=document.querySelector(".logo img").src;hm.querySelector("img").src=lg;
+$("play").onclick=()=>{sfx("tap");cloudSwap(()=>go("game"))};
+$("homemap").onclick=()=>{sfx("tap");cloudSwap(()=>go("map"))};
+$("homeach").onclick=()=>{sfx("tap");go("ach")};
+$("achx").onclick=()=>{sfx("tap");goBack()};
 chk(true);
 /* حفظ دائم للتقدّم: تخزين غير قابل للمسح + نسخة احتياطية في IndexedDB تُستعاد إن مُسح localStorage */
 const KEYS=["qitaf-best","qitaf-prog","qitaf-ach","qitaf-mute"];
