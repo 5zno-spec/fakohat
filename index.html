@@ -499,6 +499,18 @@ $("play").onclick=()=>{sfx("tap");cloudSwap(()=>go("game"))};
 $("homemap").onclick=()=>{sfx("tap");cloudSwap(()=>go("map"))};
 $("homeach").onclick=()=>{sfx("tap");go("ach")};
 $("achx").onclick=()=>{sfx("tap");goBack()};
+/* على الحاسوب: زر الرجوع تحت المربعات عند حافتها اليسرى ويخرج عنها قليلًا */
+const bk=$("back"),wide=matchMedia("(min-width:700px)");
+function placeBack(){
+  if(!wide.matches){["left","top","bottom"].forEach(p=>bk.style.removeProperty(p));return}
+  const r=board.getBoundingClientRect();
+  bk.style.left=Math.max(8,r.left-22)+"px";
+  bk.style.top=Math.min(r.bottom+12,innerHeight-66)+"px";
+  bk.style.bottom="auto";
+}
+addEventListener("resize",placeBack);addEventListener("scroll",placeBack,{passive:true});addEventListener("load",placeBack);
+if(window.ResizeObserver)new ResizeObserver(placeBack).observe(board);
+placeBack();
 chk(true);
 /* حفظ دائم للتقدّم: تخزين غير قابل للمسح + نسخة احتياطية في IndexedDB تُستعاد إن مُسح localStorage */
 const KEYS=["qitaf-best","qitaf-prog","qitaf-ach","qitaf-mute"];
