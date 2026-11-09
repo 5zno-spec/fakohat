@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>فكوهات – لعبة الفواكه</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#78c8ff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="فكوهات">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;800&family=Lalezar&display=swap">
 <style>
 :root{--bg:#0f2e2b;--panel:#173f3a;--cell:#1f4f49;--cell2:#245b54;--ink:#fff7e6;--mute:#9fc9bd;--acc:#ffd23f;--bad:#ff6b5b;color-scheme:dark;
@@ -121,7 +127,109 @@ main>p{margin-bottom:auto!important}
 #mapx,#back{position:fixed;left:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:3;width:58px;height:58px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;line-height:0;background:#fff;color:#8a2f55;box-shadow:0 4px 0 #e3a9c0,0 8px 16px rgba(0,0,0,.25)}
 #mapx:active,#back:active{translate:0 3px;box-shadow:0 1px 0 #e3a9c0}
 
+/* نافذة التثبيت الزجاجية */
+#ip{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));background:rgba(74,34,54,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);opacity:0;transition:opacity .35s}
+#ip.on{display:flex}
+#ip.vis{opacity:1}
+#ip-card{position:relative;width:min(100%,380px);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-x:hidden;overflow-y:auto;padding:26px 22px 20px;border-radius:28px;text-align:center;color:#4a2236;
+background:linear-gradient(145deg,rgba(255,255,255,.62),rgba(255,255,255,.26));
+-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);
+border:1px solid rgba(255,255,255,.75);
+box-shadow:0 24px 60px rgba(214,90,130,.32),inset 0 2px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(255,255,255,.25);
+transform:translateY(24px) scale(.94);transition:transform .45s cubic-bezier(.2,1.3,.4,1)}
+#ip.vis #ip-card{transform:none}
+#ip-card:focus{outline:none}
+#ip-card::before,#ip-card::after{content:"";position:absolute;z-index:-1;border-radius:50%;filter:blur(30px);pointer-events:none}
+#ip-card::before{width:160px;height:160px;left:-50px;top:-60px;background:rgba(255,120,170,.45)}
+#ip-card::after{width:170px;height:170px;right:-60px;bottom:-70px;background:rgba(90,190,255,.45)}
+#ip .ip-ic{width:92px;height:92px;margin:0 auto 12px;border-radius:26px;display:grid;place-items:center;background:linear-gradient(145deg,rgba(255,255,255,.85),rgba(255,255,255,.4));border:1px solid rgba(255,255,255,.9);box-shadow:0 10px 24px rgba(214,90,130,.3),inset 0 1px 0 #fff}
+#ip .ip-ic img{width:78%;height:auto;display:block}
+#ip h2{margin:0 0 6px;font-size:1.45rem;font-weight:800;line-height:1.3;color:#4a2236}
+#ip p{margin:0;font-size:.98rem;font-weight:700;line-height:1.6;color:#7a3a57}
+#ip .ip-steps{display:none;margin:12px 0 0;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.8);font-size:.95rem;font-weight:700;line-height:1.8;color:#4a2236}
+#ip .ip-steps.on{display:block}
+#ip .ip-steps svg{vertical-align:-5px;margin:0 2px}
+#ip .ip-row{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+#ip button{font:inherit;font-size:1.1rem;font-weight:800;border:0;border-radius:18px;padding:12px 18px;cursor:pointer}
+#ip button:focus-visible{outline:3px solid #4a2236;outline-offset:2px}
+#ip .ip-go{color:#fff;background:linear-gradient(180deg,#ff9ac0,#ff4d7e);box-shadow:0 5px 0 #c2305c,0 10px 18px rgba(214,90,130,.35)}
+#ip .ip-go:active{translate:0 3px;box-shadow:0 2px 0 #c2305c}
+#ip .ip-no{color:#8a2f55;background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 1px rgba(255,255,255,.85)}
+@media (max-width:520px){#ip{align-items:flex-end}#ip-card{width:100%}}
+@media (prefers-reduced-motion:reduce){#ip,#ip-card{transition:none}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){#ip-card{background:rgba(255,255,255,.92)}}
 </style>
+<script>
+/* نافذة تثبيت التطبيق: تظهر بعد ثانية من فتح الصفحة (حاسوب وهاتف).
+   لإعادة إظهارها أثناء التجربة افتح الصفحة مع ‎?install=1 */
+(()=>{"use strict";
+const KEY="qitaf-install",SNOOZE=864e5,DELAY=1000;
+const ua=navigator.userAgent,q=id=>document.getElementById(id);
+const ios=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const ffDesktop=!ios&&/firefox/i.test(ua)&&!/android|mobile|tablet/i.test(ua);
+const safariDesktop=!ios&&/safari/i.test(ua)&&!/chrome|chromium|crios|fxios|edg|opr|android/i.test(ua);
+const force=/[?&]install(=|&|$)/.test(location.search);
+const standalone=()=>["standalone","fullscreen","minimal-ui"].some(m=>matchMedia("(display-mode: "+m+")").matches)||navigator.standalone===true;
+const mem=(k,v)=>{try{return v===undefined?localStorage.getItem(k):localStorage.setItem(k,v)}catch(e){return null}};
+const snoozed=()=>{const v=mem(KEY);return v==="done"||(!!v&&Date.now()-(+v||0)<SNOOZE)};
+const tap=()=>{try{sfx("tap")}catch(e){}};
+const SHARE='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 15V3M8 7l4-4 4 4M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>';
+const HOW=ios?"اضغط زر المشاركة "+SHARE+" في شريط المتصفح، ثم اختر «إضافة إلى الشاشة الرئيسية».":safariDesktop?"من قائمة «ملف» اختر «إضافة إلى Dock».":"افتح قائمة المتصفح (⋮ أو ⋯) ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».";
+let dp=null,ov,go,no,steps,last,mode="ask",isOpen=false;
+
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e});
+addEventListener("appinstalled",()=>{dp=null;mem(KEY,"done");hide()});
+
+function setMode(){
+  const ack=mode==="ack";
+  steps.innerHTML=ack?HOW:"";steps.classList.toggle("on",ack);
+  go.textContent=ack?"حسنًا":"تثبيت";no.hidden=ack;
+}
+function show(){
+  if(isOpen||!ov)return;
+  if(!force&&(standalone()||snoozed()||ffDesktop))return;
+  const lg=document.querySelector(".logo img");if(lg)ov.querySelector(".ip-ic img").src=lg.src;
+  mode=ios?"ack":"ask";setMode();
+  last=document.activeElement;isOpen=true;
+  ov.classList.add("on");ov.setAttribute("aria-hidden","false");ov.offsetWidth;
+  requestAnimationFrame(()=>{ov.classList.add("vis");q("ip-card").focus({preventScroll:true})});
+}
+function hide(){
+  if(!isOpen)return;isOpen=false;
+  if(mem(KEY)!=="done")mem(KEY,String(Date.now()));
+  ov.classList.remove("vis");ov.setAttribute("aria-hidden","true");
+  const end=()=>{ov.classList.remove("on");try{last&&last.focus&&last.focus({preventScroll:true})}catch(e){}};
+  matchMedia("(prefers-reduced-motion:reduce)").matches?end():setTimeout(end,420);
+}
+async function onGo(){
+  tap();
+  if(mode==="ack"){hide();return}
+  if(dp){
+    const p=dp;dp=null;
+    try{p.prompt();const r=await p.userChoice;mem(KEY,r&&r.outcome==="accepted"?"done":String(Date.now()))}
+    catch(e){mem(KEY,String(Date.now()))}
+    hide();return;
+  }
+  mode="ack";setMode();go.focus({preventScroll:true});
+}
+addEventListener("keydown",e=>{
+  if(!isOpen)return;
+  if(e.key==="Escape"){hide();return}
+  if(e.key==="Tab"){
+    const b=[go,no].filter(x=>!x.hidden),i=b.indexOf(document.activeElement);
+    e.preventDefault();b[(i+(e.shiftKey?-1:1)+b.length)%b.length].focus();
+  }
+});
+document.addEventListener("DOMContentLoaded",()=>{
+  ov=q("ip");go=q("ip-go");no=q("ip-no");steps=q("ip-s");
+  if(!ov)return;
+  go.onclick=onGo;no.onclick=()=>{tap();hide()};
+  ov.addEventListener("click",e=>{if(e.target===ov)hide()});
+  setTimeout(show,DELAY);
+});
+if("serviceWorker" in navigator)addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})});
+})();
+</script>
 </head>
 <body>
 <div id="home"><i class="cl" style="left:60%;top:8%;scale:.9;animation-duration:9s"></i><i class="cl" style="left:4%;top:20%;animation-duration:10s"></i><i class="cl" style="left:56%;top:80%;scale:1.1"></i><img alt=""><button id="play">هيا نلعب</button><button id="homemap">الخريطة</button></div>
@@ -142,6 +250,13 @@ main>p{margin-bottom:auto!important}
 </main>
 <button class="ghost" id="back" aria-label="رجوع إلى الخريطة" title="رجوع إلى الخريطة" style="z-index:5"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M14 6l6 6-6 6"/></svg></button>
 <div id="msg"></div>
+<div id="ip" aria-hidden="true"><div id="ip-card" role="dialog" aria-modal="true" aria-labelledby="ip-t" aria-describedby="ip-d" tabindex="-1">
+<div class="ip-ic"><img alt=""></div>
+<h2 id="ip-t">ثبّت «فكوهات» على جهازك</h2>
+<p id="ip-d">افتح اللعبة بلمسة واحدة من شاشتك الرئيسية، بملء الشاشة وكأنها تطبيق.</p>
+<div class="ip-steps" id="ip-s"></div>
+<div class="ip-row"><button type="button" class="ip-go" id="ip-go">تثبيت</button><button type="button" class="ip-no" id="ip-no">ليس الآن</button></div>
+</div></div>
 <section id="map"><button class="ghost" id="mapx" aria-label="رجوع" title="رجوع"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M14 6l6 6-6 6"/></svg></button><div id="mapbody"></div></section>
 <script>
 let R=8,C=8;const F=["🍎","🍌","🍇","🍊","🍓","🍉"];
