@@ -115,6 +115,8 @@ main>p{margin-bottom:auto!important}
 #homemap:active{translate:0 4px;box-shadow:0 2px 0 #1f8a3f}
 #homeach{position:relative;margin-top:0;font-size:1.3rem;padding:10px 40px;border-radius:30px;color:#5a2a00;background:linear-gradient(180deg,#ffd166,#ff9f1c);box-shadow:0 6px 0 #b86a00,0 12px 20px rgba(255,159,28,.4);animation:bob 1.6s ease-in-out infinite;animation-delay:.4s}
 #homeach:active{translate:0 4px;box-shadow:0 2px 0 #b86a00}
+/* الحاسوب: الأزرار السفلية أبعد عن المربعات */
+@media (min-width:700px){.row{margin-top:40px}}
 @media (max-height:620px){#home{gap:18px}#home img{width:min(48vw,190px)}}
 /* الجوال: عقد الخريطة أصغر قليلًا وبلا نبض واسع كي لا تتلامس مع المرحلة المجاورة */
 @media (max-width:520px){.nd{width:50px;height:50px;font-size:1.25rem}.nd small{font-size:.68rem}.nd span{font-size:.62rem;top:calc(100% + 2px)}.nd.cur{width:60px;height:60px;box-shadow:0 4px 0 #8e1038,0 0 0 4px rgba(255,255,255,.9),0 0 16px 6px rgba(255,255,255,.7)}@keyframes pulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.07)}}}
@@ -506,10 +508,10 @@ const bks=[$("back"),$("mapx"),$("achx")],wide=matchMedia("(min-width:700px)");
 function placeBack(){
   if(!wide.matches){bks.forEach(b=>["left","top","bottom"].forEach(p=>b.style.removeProperty(p)));return}
   /* الخريطة والإنجازات تغطيان اللعبة لكن مربعاتها تبقى في مكانها، فنستعمل قياساتها نفسها لتطابق الأزرار الثلاثة تمامًا */
-  const r=board.getBoundingClientRect();
+  const r=board.getBoundingClientRect(),rowT=document.querySelector(".row").getBoundingClientRect().top;
   bks.forEach(b=>{
     b.style.left=Math.max(8,r.left-22)+"px";
-    b.style.top=Math.min(r.bottom+12,innerHeight-66)+"px";
+    b.style.top=Math.min(rowT,innerHeight-66)+"px";
     b.style.bottom="auto";
   });
 }
