@@ -1,9 +1,9 @@
 // عامل خدمة: الصفحة من الشبكة أولًا (لتصل التحديثات دائمًا) مع مهلة قصيرة تعود بعدها للنسخة المحفوظة،
 // والصور والأيقونات من الذاكرة أولًا (لا تتغير إلا برفع رقم V)، والخطوط تُعرض من الذاكرة وتُحدَّث في الخلفية.
 // ارفع رقم V عند تغيير أي صورة أو أيقونة.
-const V = "fakohat-v2";
+const V = "fakohat-v3";
 const PRE = [
-  "./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png",
+  "index.html", "manifest.webmanifest", "icon-192.png",
   "img/logo.webp", "img/h0.webp", "img/h1.webp", "img/h2.webp",
   "img/wintree.webp", "img/bgi.webp", "img/trimg.webp"
 ];
@@ -45,7 +45,13 @@ const networkFirst = r =>
       fromCache().then(m => { if (m && !done) { done = true; resolve(m); } });
     }, PAGE_TIMEOUT);
     fetch(r)
-      .then(res => { clearTimeout(timer); save(r, res); if (!done) { done = true; resolve(res); } })
+      .then(res => {
+        clearTimeout(timer);
+        // نحفظ صفحات التنقل كلها تحت مفتاح واحد حتى لا تتكرر النسخ بسبب معاملات الاستعلام
+        if (r.mode === "navigate") { if (res.ok) { const copy = res.clone(); caches.open(V).then(c => c.put("index.html", copy)); } }
+        else save(r, res);
+        if (!done) { done = true; resolve(res); }
+      })
       .catch(() => {
         clearTimeout(timer);
         fromCache().then(m => { if (!done) { done = true; resolve(m || Response.error()); } });
