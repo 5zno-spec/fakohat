@@ -525,18 +525,45 @@ function show(s){
   $("map").className="";$("ach").className="";
   if(s==="map")showMap();else if(s==="ach")showAch();
 }
-function go(s){if(stack[stack.length-1]!==s)stack.push(s);show(s)}
-function goBack(){if(stack.length>1)stack.pop();show(stack[stack.length-1])}
-$("back").onclick=()=>cloudSwap(goBack);
+/* زر الرجوع في الجهاز/المتصفح: كل شاشة تُسجَّل خطوة في سجل المتصفح، فيرجع للشاشة السابقة نفسها كسهم الرجوع */
+let hok=false,backing=false;
+try{history.replaceState({fk:1,s:"home"},"")}catch(e){}   /* بعد إعادة التحميل نبدأ من الرئيسية */
+function hpush(extra){try{history.pushState(Object.assign({fk:stack.length,s:stack[stack.length-1]},extra||{}),"");hok=true}catch(e){}}
+function hrepl(){try{history.replaceState({fk:stack.length,s:stack[stack.length-1]},"")}catch(e){}}
+function go(s){if(stack[stack.length-1]!==s){stack.push(s);hpush()}show(s)}
+function popTop(){ /* يزيل الشاشة الحالية ويعود للتي قبلها */
+  if(stack.length<2)return;
+  if(hok){if(backing)return;backing=true;setTimeout(()=>{backing=false},700);history.back()}
+  else{stack.pop();show(stack[stack.length-1])}
+}
+function swapTop(s){ /* استبدال الشاشة الحالية (الخريطة) بشاشة أخرى دون إضافة خطوة */
+  if(stack[stack.length-2]===s)popTop();
+  else{stack[stack.length-1]=s;hrepl();show(s)}
+}
+function applyState(st){
+  const d=st&&st.fk?st.fk:1;
+  if(d<stack.length)stack.length=d;
+  else if(d>stack.length&&st&&st.s)stack.push(st.s);
+  show(stack[stack.length-1]);
+}
+addEventListener("popstate",e=>{
+  backing=false;
+  const st=e.state,d=st&&st.fk?st.fk:1;
+  if(!inw.hidden)instClose(true);   /* الرجوع يغلق نافذة التثبيت أولاً */
+  if(d===stack.length&&(!st||!st.s||st.s===stack[stack.length-1]))return;
+  const run=()=>applyState(history.state);   /* الحالة الحالية وقت التنفيذ لا وقت الضغط، فالرجوع السريع لا يُربك الترتيب */
+  cg?run():cloudSwap(run);
+});
+$("back").onclick=popTop;
 $("mapbtn").onclick=()=>cloudSwap(()=>go("map"));
-$("mapx").onclick=()=>cloudSwap(goBack);
-$("mapbody").onclick=e=>{const b=e.target.closest(".nd");if(b&&!b.disabled)cloudSwap(()=>{stack.pop();go("game");newLevel(+b.dataset.l)})};
+$("mapx").onclick=popTop;
+$("mapbody").onclick=e=>{const b=e.target.closest(".nd");if(b&&!b.disabled)cloudSwap(()=>{swapTop("game");newLevel(+b.dataset.l)})};
 newLevel(Math.min(prog.unlocked,TOTAL));
 const lg=document.querySelector(".logo img").src;hm.querySelector("img").src=lg;
 $("play").onclick=()=>{sfx("tap");cloudSwap(()=>go("game"))};
 $("homemap").onclick=()=>{sfx("tap");cloudSwap(()=>go("map"))};
 $("homeach").onclick=()=>{sfx("tap");go("ach")};
-$("achx").onclick=()=>{sfx("tap");goBack()};
+$("achx").onclick=()=>{sfx("tap");popTop()};
 /* على الحاسوب: زر الرجوع تحت المربعات عند حافتها اليسرى ويخرج عنها قليلًا */
 const bks=[$("back"),$("mapx"),$("achx")],wide=matchMedia("(min-width:700px)");
 function placeBack(){
@@ -587,10 +614,11 @@ let dip=null,instDue=false,instShown=false;
 const inw=$("inst"),standalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true,
 ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 $("inl").src=lg;
-function instClose(){inw.classList.remove("on");setTimeout(()=>{inw.hidden=true},250)}
+function instClose(fromBack){inw.classList.remove("on");setTimeout(()=>{inw.hidden=true},250);
+  if(fromBack!==true&&history.state&&history.state.inst)try{history.back()}catch(e){}} /* نغلق خطوة النافذة من السجل أيضاً */
 function instOpen(){
   if(instShown||!instDue||standalone()||stack[stack.length-1]!=="home"||!(dip||ios))return;
-  instShown=true;inw.hidden=false;
+  instShown=true;inw.hidden=false;hpush({inst:1});
   requestAnimationFrame(()=>{inw.classList.add("on");$("instgo").focus()});
 }
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();dip=e;instOpen()});
