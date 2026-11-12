@@ -322,12 +322,13 @@ function bush(x,y,sc){
 function scene(){
   BX=[];const HL=[],HW=84;
   const addH=(side,x,yb,W)=>{BX.push([x-W/2,yb-W*233/240,x+W/2,yb]);HL.push({side,x,yb,W})};
-  const yt=Y0-100,ys=[];for(let y=yt;y<=H;y+=20)ys.push(y);
+  const yt=Y0-100,ys=[];for(let y=yt;y<=H;y+=20)ys.push(y);if(ys[ys.length-1]<H)ys.push(H);
   const L=ys.map(y=>`${f1(cx(y)-RW)} ${y}`),R=ys.map(y=>`${f1(cx(y)+RW)} ${y}`);
   const road="M"+L.join("L")+"L"+R.slice().reverse().join("L")+`Q${f1(cx(yt))} ${yt-60} ${L[0]}Z`;
   const y2=ys.filter(y=>y>=Y0-40);
   const band="M"+y2.map(y=>`${f1(cx(y)-45)} ${y}`).join("L")+"L"+y2.slice().reverse().map(y=>`${f1(cx(y)+45)} ${y}`).join("L")+"Z";
-  const rb=[];for(let y=Y0;y<=ly(1);y+=22)rb.push(`${f1(cx(y))} ${y}`);
+  /* الطريق المنقّط يمتد حتى حافة الخريطة السفلية (نطرح نصف عرض الخط حتى لا يتجاوزها) */
+  const rb=[];for(let y=Y0;y<H-7;y+=22)rb.push(`${f1(cx(y))} ${y}`);rb.push(`${f1(cx(H-7))} ${H-7}`);
   const rd="M"+rb.join("L");
   let g="",k=0;const tp=[];
   for(let y=Y0-20;y<H-60;y+=390,k++){
