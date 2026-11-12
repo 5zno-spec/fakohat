@@ -59,7 +59,7 @@ transition:translate .28s cubic-bezier(.3,1.2,.5,1),opacity .2s,scale .2s;cursor
 #map.on{display:block}
 .mh{position:sticky;top:0;z-index:2;display:flex;justify-content:space-between;align-items:center;max-width:480px;margin:0 auto;padding:12px 14px;background:rgba(15,46,43,.94);border-radius:0 0 18px 18px}
 .mh h2{margin:0;color:var(--acc);font-size:1.5rem}
-#mapbody{position:relative;max-width:480px;margin:0 auto;aspect-ratio:400/3136}
+#mapbody{position:relative;max-width:480px;margin:0 auto;aspect-ratio:400/5776}
 #mapbody svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .nd{position:absolute;width:64px;height:64px;transform:translate(-50%,-50%);border-radius:50%;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.5rem;line-height:1}
 .nd small{font-size:.75rem;font-weight:800}
@@ -223,10 +223,12 @@ let grid,score,moves,level,busy,sel,start,best=0,uid=0;
 try{best=+localStorage.getItem("qitaf-best")||0}catch(e){}
 const target=()=>level<=10?15+(level-1)*2:Math.round(35+(level-10)*65/(TOTAL-10));
 let maxCombo=0,pm=0,hit=null;
-const TOTAL=30;
+const TOTAL=60;
 const SIZES=[[6,4],[6,5],[6,6],[7,6],[7,7],[8,7],[8,8]];
 let prog={unlocked:1,stars:{}};
 try{Object.assign(prog,JSON.parse(localStorage.getItem("qitaf-prog")||"{}"))}catch(e){}
+// من أنهى آخر مرحلة قديمة تُفتح له التالية مباشرة بعد زيادة عدد المراحل
+const fixUnlock=()=>{while(prog.unlocked<TOTAL&&(prog.stars[prog.unlocked]||0)>0)prog.unlocked++};fixUnlock();
 function saveWin(l,s){
   prog.stars[l]=Math.max(prog.stars[l]||0,s);prog.unlocked=Math.max(prog.unlocked,Math.min(l+1,TOTAL));
   try{localStorage.setItem("qitaf-prog",JSON.stringify(prog))}catch(e){}
@@ -239,11 +241,14 @@ const doneN=()=>Object.keys(prog.stars).filter(k=>prog.stars[k]>0).length,starN=
 const AL=[
   {id:"l1",i:"🌱",t:"البداية",d:"أنهِ المرحلة الأولى",g:1,v:doneN},
   {id:"l10",i:"🍀",t:"متدرّب",d:"أنهِ ١٠ مراحل",g:10,v:doneN},
-  {id:"l15",i:"🏅",t:"نصف الطريق",d:"أنهِ ١٥ مرحلة",g:15,v:doneN},
-  {id:"lall",i:"👑",t:"بطل الفواكه",d:"أنهِ المراحل الثلاثين كلها",g:TOTAL,v:doneN},
+  {id:"l15",i:"🏅",t:"ربع الطريق",d:"أنهِ ١٥ مرحلة",g:15,v:doneN},
+  {id:"lall",i:"🏆",t:"نصف الطريق",d:"أنهِ ٣٠ مرحلة",g:30,v:doneN},
+  {id:"l45",i:"🎖️",t:"على المشارف",d:"أنهِ ٤٥ مرحلة",g:45,v:doneN},
+  {id:"l60",i:"👑",t:"بطل الفواكه",d:"أنهِ المراحل الستين كلها",g:TOTAL,v:doneN},
   {id:"s10",i:"⭐",t:"جامع النجوم",d:"اجمع ١٠ نجوم",g:10,v:starN},
   {id:"s45",i:"🌟",t:"نجم ساطع",d:"اجمع ٤٥ نجمة",g:45,v:starN},
-  {id:"s90",i:"💫",t:"كل النجوم",d:"اجمع ٩٠ نجمة",g:TOTAL*3,v:starN},
+  {id:"s90",i:"💫",t:"تسعون نجمة",d:"اجمع ٩٠ نجمة",g:90,v:starN},
+  {id:"s180",i:"🌌",t:"كل النجوم",d:"اجمع ١٨٠ نجمة",g:TOTAL*3,v:starN},
   {id:"c3",i:"🔥",t:"سلسلة نارية",d:"حقق سلسلة من ٣ تطابقات متتالية",g:3,v:()=>ach.mc},
   {id:"c5",i:"⚡",t:"سلسلة خارقة",d:"حقق سلسلة من ٥ تطابقات متتالية",g:5,v:()=>ach.mc},
   {id:"f100",i:"🍓",t:"قطاف",d:"اجمع ١٠٠ فاكهة",g:100,v:()=>ach.fr},
@@ -290,7 +295,7 @@ function showAch(){
     return `<div class="ac${u?"":" lk"}"><i>${u?a.i:"🔒"}</i><div><b>${a.t}</b><small>${a.d}</small>${u?"":`<div class="pb"><u style="width:${(v/a.g*100).toFixed(1)}%"></u></div><small>${ar(v+" من "+a.g)}</small>`}</div></div>`}).join("");
   $("ach").className="on";$("ach").scrollTop=0;
 }
-const Y0=400,H=3136,RW=85,cx=y=>200+60*Math.sin((TOTAL-(y-Y0)/88)*.7),ly=i=>Y0+(TOTAL-i)*88;
+const Y0=400,H=Y0+(TOTAL-1)*88+184,RW=85,cx=y=>200+60*Math.sin((TOTAL-(y-Y0)/88)*.7),ly=i=>Y0+(TOTAL-i)*88;
 const rr=n=>{const q=Math.sin(n*12.9898)*43758.5453;return q-Math.floor(q)};
 const f1=n=>n.toFixed(1);
 function tree(x,y,sc,k,fp,ns){
@@ -333,7 +338,7 @@ function scene(){
     {const m=cx(y+195)-RW,W=Math.min(HW,m-8);if(W>=HW)addH(-1,m/2,y+195+rr(k+11)*14+52,W);}
     {const m=400-(cx(y)+RW),W=Math.min(HW,m-8);if(W>=HW)addH(1,400-m/2,y+rr(k+17)*14+52,W);}
   }
-  {const yy=3035,lw=cx(yy)-RW,rw=400-(cx(yy)+RW),sl=Math.min(.9,lw/2/46*1.2),sr=Math.min(.9,rw/2/46*1.2);tp.push([lw/2,yy],[400-rw/2,yy]);g+=tree(400-rw/2,yy,sr,8)+tree(lw/2,yy+8,sl,9);}
+  {const yy=H-101,lw=cx(yy)-RW,rw=400-(cx(yy)+RW),sl=Math.min(.9,lw/2/46*1.2),sr=Math.min(.9,rw/2/46*1.2);tp.push([lw/2,yy],[400-rw/2,yy]);g+=tree(400-rw/2,yy,sr,8)+tree(lw/2,yy+8,sl,9);}
   for(const side of [-1,1]){
     for(let y=Y0+70,n=0;y<H-70;y+=10,n++){
       if(rr(n*7+side*3+101)<.2)continue;
@@ -598,7 +603,7 @@ async function restore(){
     db.close();
     if(got[1]===undefined)return;
     KEYS.forEach((k,i)=>{if(got[i]!==undefined)localStorage.setItem(k,got[i])});
-    Object.assign(prog,JSON.parse(got[1]));
+    Object.assign(prog,JSON.parse(got[1]));fixUnlock();
     if(got[2])Object.assign(ach,JSON.parse(got[2]));
     best=Math.max(best,+got[0]||0);muted=got[3]==="1";setSnd();
     if(!score)newLevel(Math.min(prog.unlocked,TOTAL));
