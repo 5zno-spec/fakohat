@@ -338,7 +338,9 @@ function scene(){
     {const m=cx(y+195)-RW,W=Math.min(HW,m-8);if(W>=HW)addH(-1,m/2,y+195+rr(k+11)*14+52,W);}
     {const m=400-(cx(y)+RW),W=Math.min(HW,m-8);if(W>=HW)addH(1,400-m/2,y+rr(k+17)*14+52,W);}
   }
-  {const yy=H-101,lw=cx(yy)-RW,rw=400-(cx(yy)+RW),sl=Math.min(.9,lw/2/46*1.2),sr=Math.min(.9,rw/2/46*1.2);tp.push([lw/2,yy],[400-rw/2,yy]);g+=tree(400-rw/2,yy,sr,8)+tree(lw/2,yy+8,sl,9);}
+  {const yy=H-101,lw=cx(yy)-RW,rw=400-(cx(yy)+RW),sl=Math.min(.9,lw/2/46*1.2),sr=Math.min(.9,rw/2/46*1.2);tp.push([lw/2,yy],[400-rw/2,yy]);g+=tree(400-rw/2,yy,sr,8)+tree(lw/2,yy+8,sl,9);
+    /* نزيل أي بيت يتداخل مع شجرتي أسفل الخريطة */
+    const tb=BX.slice(-2);for(let i=HL.length-1;i>=0;i--){const h=HL[i],hb=[h.x-h.W/2,h.yb-h.W*233/240,h.x+h.W/2,h.yb];if(tb.some(o=>hb[0]<o[2]&&hb[2]>o[0]&&hb[1]<o[3]&&hb[3]>o[1]))HL.splice(i,1)}}
   for(const side of [-1,1]){
     for(let y=Y0+70,n=0;y<H-70;y+=10,n++){
       if(rr(n*7+side*3+101)<.2)continue;
